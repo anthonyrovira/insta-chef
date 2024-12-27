@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+
+/* Amélioration du scrolling pour le carousel */
+.snap-x {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.snap-x::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar {
+  scrollbar-color: #ff8a50 #fff3e0;
+  scrollbar-width: auto;
+}
+
+.scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.insta-gradient {
+  background: #ff8a50;
+  background: linear-gradient(to right, #ff8a50 0%, #ffa726 80%, #fff3e0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  text-shadow: 0px 2px 1px rgba(0, 0, 0, 0.05);
+}
+
+.chef-gradient {
+  background: #b3aa9d;
+  background: linear-gradient(to right, #fff3e0 0%, #d4cbbb 20%, #b3aa9d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  text-shadow: 0px 2px 1px rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  background: radial-gradient(72.07% 270.53% at 4.19% 83.87%, #ff8a50, #ffa726), linear-gradient(90deg, #e0e0e0, #edeef099);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  text-shadow: 0px 2px 1px rgba(0, 0, 0, 0.05);
+}
