@@ -3,12 +3,13 @@
 import { Recipe } from "@/types";
 import RecipeCard from "./RecipeCard";
 import { useCallback, useMemo, useState } from "react";
-import { CircleChevronRight, CircleChevronLeft } from "lucide-react";
+import { CircleChevronRight, CircleChevronLeft, LayoutGrid, LayoutList } from "lucide-react";
 
 export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
   const [sort, setSort] = useState<string>("relevance");
   const [filter, setFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const RECIPES_PER_PAGE = 12 as const;
 
   // sort recipes
@@ -76,26 +77,26 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
 
   return (
     <div className="w-full mt-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-        <h2 className="text-2xl font-semibold mb-6 text-secondary-light dark:text-secondary-dark">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <h2 className="text-2xl font-semibold text-secondary-light dark:text-secondary-dark">
           Recipes found <span className="text-primary-light dark:text-primary-dark">({recipes.length})</span>
         </h2>
 
-        <div className="flex flex-wrap gap-4 mb-8">
+        <div className="flex flex-wrap gap-4 ">
           <div className="flex items-center gap-2">
             <label htmlFor="sort" className="text-sm text-secondary-light dark:text-secondary-dark">
               Sort by:
             </label>
             <select
               id="sort"
-              className="px-3 py-1.5 rounded-lg border border-tertiary-light dark:border-tertiary-dark bg-background-light dark:bg-background-dark text-secondary-light dark:text-secondary-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
+              className="px-3 h-9 rounded-lg border border-tertiary-light dark:border-tertiary-dark bg-background-light dark:bg-background-dark text-secondary-light dark:text-secondary-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
               onChange={(e) => setSort(e.target.value)}
             >
               <option value="relevance">Relevance</option>
               <option value="likes-asc">Likes (Low to High)</option>
               <option value="likes-desc">Likes (High to Low)</option>
-              <option value="ingredients-asc">Number of ingredients (Low to High)</option>
-              <option value="ingredients-desc">Number of ingredients (High to Low)</option>
+              <option value="ingredients-asc">Ingredients (Low to High)</option>
+              <option value="ingredients-desc">Ingredients (High to Low)</option>
               <option value="missing-asc">Missing ingredients (Low to High)</option>
               <option value="missing-desc">Missing ingredients (High to Low)</option>
             </select>
@@ -107,7 +108,7 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
             </label>
             <select
               id="filter"
-              className="px-3 py-1.5 rounded-lg border border-tertiary-light dark:border-tertiary-dark bg-background-light dark:bg-background-dark text-secondary-light dark:text-secondary-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
+              className="px-3 h-9 rounded-lg border border-tertiary-light dark:border-tertiary-dark bg-background-light dark:bg-background-dark text-secondary-light dark:text-secondary-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
               onChange={(e) => setFilter(e.target.value)}
             >
               <option value="all">All</option>
@@ -117,10 +118,21 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
               <option value="likes-50">50+ likes</option>
             </select>
           </div>
+
+          <div className="gap-2 hidden lg:flex lg:items-center">
+            <button
+              aria-label="Toggle view mode"
+              name="view-mode"
+              onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+              className="p-2 w-9 h-9 rounded-lg border border-tertiary-light dark:border-tertiary-dark hover:bg-background-dark/10"
+            >
+              {viewMode === "grid" ? <LayoutList size={18} /> : <LayoutGrid size={18} />}
+            </button>
+          </div>
         </div>
       </div>
 
-      <RecipeCard recipes={paginatedRecipes} />
+      <RecipeCard recipes={paginatedRecipes} viewMode={viewMode} />
 
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-8">

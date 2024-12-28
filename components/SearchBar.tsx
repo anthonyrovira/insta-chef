@@ -158,7 +158,7 @@ export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBa
         onClick={() => {
           handleSearch(selectedTags.map((tag) => tag.name));
         }}
-        className="mt-6 w-full bg-primary-light dark:bg-primary-dark text-white py-3 px-4 rounded-lg hover:opacity-90 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 py-2 px-10 mx-auto block bg-primary-light dark:bg-primary-dark text-white rounded-lg hover:opacity-90 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={selectedTags.length === 0}
       >
         Search for recipes
