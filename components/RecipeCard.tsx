@@ -17,7 +17,7 @@ export default function RecipeCard({ recipes }: { recipes: Recipe[] }) {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-8 pb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pb-8 place-items-center">
       {recipes.map((recipe, index) => (
         <div key={recipe.id} className="flex-none rounded-xl w-[312px] bg-gradient-to-br from-white/50 to-white/00 p-[1px]">
           <div className="relative bg-background-light dark:bg-background-dark border border-tertiary-light dark:border-tertiary-dark rounded-xl shadow-sm drop-shadow-sm hover:shadow-orange-400  hover:shadow-sm h-full w-fit">
@@ -41,7 +41,7 @@ export default function RecipeCard({ recipes }: { recipes: Recipe[] }) {
               <BookmarkPlus className="w-6 h-6 text-primary-light dark:text-primary-dark" />
             </button>
 
-            <div className="p-4 h-full">
+            <div className="p-4">
               <h3 className="title font-medium text-lg text-secondary-light dark:text-secondary-dark group-hover:text-primary-light dark:group-hover:text-primary-dark transition-colors">
                 {recipe.title}
               </h3>
@@ -108,7 +108,7 @@ export default function RecipeCard({ recipes }: { recipes: Recipe[] }) {
               </div>
 
               <button
-                className="absolute bottom-2 left-2 right-2  flex items-center justify-center py-2 px-4 rounded-lg border border-primary-light dark:border-primary-dark text-primary-light dark:text-primary-dark hover:bg-primary-light hover:text-white dark:hover:bg-primary-dark dark:hover:text-white transition-colors text-sm font-medium"
+                className="absolute bottom-2 left-2 right-2 button dark:border-primary-dark  dark:text-primary-dark hover:bg-primary-light hover:text-white dark:hover:bg-primary-dark dark:hover:text-white"
                 onClick={() => push(`/recipe/${recipe.id}`)}
               >
                 <span className="mr-2">View Recipe</span>

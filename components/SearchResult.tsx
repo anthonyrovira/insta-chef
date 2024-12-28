@@ -3,10 +3,13 @@
 import { Recipe } from "@/types";
 import RecipeCard from "./RecipeCard";
 import { useCallback, useMemo, useState } from "react";
+import { CircleChevronRight, CircleChevronLeft } from "lucide-react";
 
 export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
   const [sort, setSort] = useState<string>("relevance");
   const [filter, setFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const RECIPES_PER_PAGE = 12 as const;
 
   // sort recipes
   const sortRecipes = useCallback(
@@ -52,6 +55,24 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
 
   const sortedRecipes = useMemo(() => sortRecipes(recipes), [recipes, sort]);
   const filteredRecipes = useMemo(() => filterRecipes(sortedRecipes), [sortedRecipes, filter]);
+
+  // Compute paginated recipes
+  const paginatedRecipes = useMemo(() => {
+    const startIndex = (currentPage - 1) * RECIPES_PER_PAGE;
+    const endIndex = startIndex + RECIPES_PER_PAGE;
+    return filteredRecipes.slice(startIndex, endIndex);
+  }, [filteredRecipes, currentPage]);
+
+  // Compute total pages
+  const totalPages = Math.ceil(filteredRecipes.length / RECIPES_PER_PAGE);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prevPage) => prevPage - 1);
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
 
   return (
     <div className="w-full mt-8">
@@ -99,7 +120,34 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
         </div>
       </div>
 
-      <RecipeCard recipes={filteredRecipes} />
+      <RecipeCard recipes={paginatedRecipes} />
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
+          <button
+            type="button"
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className="mr-2 px-4 py-2  dark:text-primary-dark  hover:text-secondary-medium  dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <CircleChevronLeft />
+          </button>
+
+          <span className="text-secondary-light dark:text-secondary-dark">
+            <span className="font-bold text-primary-light dark:text-primary-dark">{currentPage}</span> of{" "}
+            <span className="font-bold text-primary-light dark:text-primary-dark">{totalPages}</span>
+          </span>
+
+          <button
+            type="button"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="ml-2 px-4 py-2  dark:text-primary-dark  hover:text-secondary-medium  dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <CircleChevronRight />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
