@@ -1,3 +1,4 @@
+import { SUPABASE_CONFIG } from "@/config/supabase";
 import { Recipe } from "@/types";
 
 const API_BASE_URL = "https://api.spoonacular.com";
@@ -25,7 +26,7 @@ export async function findRecipesByIngredients({
 
     const response = await fetch(`${API_BASE_URL}/recipes/findByIngredients?${params}`, {
       headers: {
-        "x-api-key": process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY || "",
+        "x-api-key": SUPABASE_CONFIG.anonKey || "",
       },
     });
 

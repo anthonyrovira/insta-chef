@@ -1,4 +1,6 @@
-export const mockRecipe = {
+import { RecipeInformation } from "@/types";
+
+export const mockRecipe: RecipeInformation = {
   vegetarian: false,
   vegan: false,
   glutenFree: true,

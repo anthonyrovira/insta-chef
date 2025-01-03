@@ -3,19 +3,22 @@
 import { useEffect, useState } from "react";
 import { mockRecipe } from "@/mocks/recipe";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { RecipeInformation } from "@/types";
+import { Loader, ArrowLeft } from "lucide-react";
+import { AUTH_ROUTES } from "@/constants/auth";
 
 export default function RecipePage() {
   const params = useParams();
-  const [recipe, setRecipe] = useState(mockRecipe);
-  const [loading, setLoading] = useState(true);
+  const { push } = useRouter();
+  const [recipe, setRecipe] = useState<RecipeInformation>(mockRecipe);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
-        // Simuler un appel API avec le mock
-        // Plus tard, vous pourrez remplacer ceci par un vrai appel API
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         setRecipe(mockRecipe);
       } catch (error) {
         console.error("Error fetching recipe:", error);
@@ -30,7 +33,7 @@ export default function RecipePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
-        <p className="text-secondary-light dark:text-secondary-dark">Loading recipe...</p>
+        <Loader className="text-primary-dark animate-spin size-10" />
       </div>
     );
   }
@@ -38,6 +41,16 @@ export default function RecipePage() {
   return (
     <main className="min-h-screen p-8 bg-background-light dark:bg-background-dark">
       <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => push(AUTH_ROUTES.HOME)}
+          type="button"
+          name="back"
+          aria-label="Back to home"
+          className="mb-6 text-lg flex items-center gap-2 text-primary-light dark:text-primary-dark hover:opacity-80 transition-opacity"
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </button>
         <div className="relative w-full h-96 rounded-xl overflow-hidden mb-8">
           {recipe.image && <Image src={recipe.image} alt={recipe.title} fill className="object-cover" />}
         </div>

@@ -19,10 +19,11 @@ export default function ScrollToTopButton() {
     isScrolled && (
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        name="scroll-to-top"
         className="fixed top-20 right-4 mt-4 p-2 w-10 h-auto z-20 rounded-lg bg-tertiary-light dark:bg-tertiary-dark transition-colors"
         aria-label="Scroll to top"
       >
-        <ArrowUp className=" text-primary-light dark:text-primary-dark" />
+        <ArrowUp className="text-primary-light dark:text-primary-dark" />
       </button>
     )
   );

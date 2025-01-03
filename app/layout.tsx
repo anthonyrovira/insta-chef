@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import "./styles/reset.css";
 import "./styles/globals.css";
 import Header from "@/components/Header";
+import { validateConfig } from "@/config/supabase";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,6 +32,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  validateConfig();
+
   return (
     <html lang="en" suppressHydrationWarning className="scrollbar">
       <Head>
