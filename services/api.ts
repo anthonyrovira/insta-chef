@@ -24,11 +24,14 @@ export async function findRecipesByIngredients({
       ignorePantry: ignorePantry.toString(),
     });
 
-    const response = await fetch(`${API_BASE_URL}/recipes/findByIngredients?${params}`, {
-      headers: {
-        "x-api-key": SUPABASE_CONFIG.anonKey || "",
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/recipes/findByIngredients?apiKey=${process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY}&${params}`,
+      {
+        headers: {
+          "x-api-key": SUPABASE_CONFIG.anonKey || "",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`API call failed: ${response.statusText}`);

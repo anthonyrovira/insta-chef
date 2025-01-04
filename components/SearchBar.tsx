@@ -1,15 +1,12 @@
 "use client";
 
-import { v4 as uuidv4 } from "uuid";
-import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, useRef, Dispatch, SetStateAction, useCallback } from "react";
 import { Recipe } from "@/types";
-import { mockRecipes } from "@/mocks/recipes";
 import { findRecipesByIngredients } from "@/services/api";
-
-interface Ingredient {
-  id: string;
-  name: string;
-}
+import { useUrlParams } from "@/hooks/useUrlParams";
+import { Ingredient } from "@/types";
+import { v4 as uuidv4 } from "uuid";
+import { defaultIngredients } from "@/constants";
 
 interface SearchBarProps {
   handleSetRecipes: (newRecipes: Recipe[]) => void;
@@ -17,54 +14,64 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBarProps) {
+  const { params, updateParams } = useUrlParams();
   const [selectedTags, setSelectedTags] = useState<Ingredient[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLUListElement>(null);
 
-  const mockIngredients: Ingredient[] = [
-    { id: uuidv4(), name: "Tomato" },
-    { id: uuidv4(), name: "Potato" },
-    { id: uuidv4(), name: "Carrot" },
-    { id: uuidv4(), name: "Chicken" },
-    { id: uuidv4(), name: "Beef" },
-    { id: uuidv4(), name: "Fish" },
-    { id: uuidv4(), name: "Pasta" },
-    { id: uuidv4(), name: "Rice" },
-    { id: uuidv4(), name: "Bread" },
-    { id: uuidv4(), name: "Cheese" },
-    { id: uuidv4(), name: "Egg" },
-    { id: uuidv4(), name: "Milk" },
-    { id: uuidv4(), name: "Butter" },
-    { id: uuidv4(), name: "Sugar" },
-    { id: uuidv4(), name: "Salt" },
-    { id: uuidv4(), name: "Banana" },
-    { id: uuidv4(), name: "Oil" },
-    { id: uuidv4(), name: "Vinegar" },
-    { id: uuidv4(), name: "Pepper" },
-    { id: uuidv4(), name: "Garlic" },
-    { id: uuidv4(), name: "Onion" },
-  ];
+  useEffect(() => {
+    if (params.ingredients.length <= 0) return;
 
-  const handleSearch = async (ingredients: string[]) => {
-    setIsSearching(true);
+    const formattedIngredients = params.ingredients.map((name) => ({
+      id: uuidv4(),
+      name: decodeURIComponent(name).charAt(0).toUpperCase() + decodeURIComponent(name).slice(1),
+    }));
 
-    try {
-      const recipes = await findRecipesByIngredients({
-        ingredients,
-        number: 100,
-        ranking: 1,
-        ignorePantry: true,
-      });
+    setSelectedTags(formattedIngredients);
+    handleSearch();
+  }, []);
 
-      handleSetRecipes(recipes);
-    } catch (error) {
-      console.error("Error searching recipes:", error);
-      handleSetRecipes(mockRecipes);
-    } finally {
-      setIsSearching(false);
-    }
+  const searchRecipes = useCallback(
+    async (ingredients: string[]) => {
+      if (ingredients.length === 0) {
+        handleSetRecipes([]);
+        updateParams({ ingredients: [] });
+        return;
+      }
+
+      setIsSearching(true);
+      updateParams({ ingredients });
+
+      try {
+        const recipes = await findRecipesByIngredients({
+          ingredients,
+          number: 100,
+          ranking: 1,
+          ignorePantry: true,
+        });
+        handleSetRecipes(recipes);
+      } catch (error) {
+        console.error("Error searching recipes:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [handleSetRecipes, setIsSearching, updateParams]
+  );
+
+  const handleSearch = () => {
+    const ingredients = selectedTags.map((tag) => tag.name);
+    searchRecipes(ingredients);
+  };
+
+  const handleRemoveTag = (tagId: string) => {
+    const updatedTags = selectedTags.filter((tag) => tag.id !== tagId);
+    setSelectedTags(updatedTags);
+
+    const ingredients = updatedTags.map((tag) => tag.name);
+    searchRecipes(ingredients);
   };
 
   const filteredIngredients = (ingredients: Ingredient[]) =>
@@ -78,10 +85,6 @@ export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBa
     setSelectedTags([...selectedTags, newTag]);
     setInputValue("");
     setIsDropdownOpen(false);
-  };
-
-  const handleRemoveTag = (tagId: string) => {
-    setSelectedTags(selectedTags.filter((tag) => tag.id !== tagId));
   };
 
   useEffect(() => {
@@ -122,7 +125,7 @@ export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBa
             ref={dropdownRef}
             className="absolute z-10 w-full mt-1 bg-background-light dark:bg-background-dark border border-tertiary-light dark:border-tertiary-dark rounded-lg shadow-lg max-h-60 overflow-auto"
           >
-            {filteredIngredients(mockIngredients).map((ingredient) => (
+            {filteredIngredients(defaultIngredients).map((ingredient) => (
               <li
                 key={ingredient.id}
                 className="px-4 py-2 text-secondary-light dark:text-secondary-dark hover:bg-tertiary-light dark:hover:bg-tertiary-dark cursor-pointer transition-colors"
@@ -144,6 +147,9 @@ export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBa
             >
               {tag.name}
               <button
+                type="button"
+                aria-label="Remove ingredient"
+                name="remove-ingredient"
                 onClick={() => handleRemoveTag(tag.id)}
                 className="hover:bg-primary-light/10 dark:hover:bg-primary-dark/10 rounded-full w-5 h-5 flex items-center justify-center transition-colors"
               >
@@ -155,9 +161,7 @@ export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBa
       )}
 
       <button
-        onClick={() => {
-          handleSearch(selectedTags.map((tag) => tag.name));
-        }}
+        onClick={handleSearch}
         className="mt-4 py-2 px-10 mx-auto block bg-primary-light dark:bg-primary-dark text-white rounded-lg hover:opacity-90 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={selectedTags.length === 0}
       >

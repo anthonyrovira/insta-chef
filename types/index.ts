@@ -1,3 +1,21 @@
+export type Sort =
+  | "relevance"
+  | "likes-asc"
+  | "likes-desc"
+  | "ingredients-asc"
+  | "ingredients-desc"
+  | "missing-asc"
+  | "missing-desc";
+
+export type Filter = "favorites" | "missing-5" | "missing-3" | "likes-10" | "likes-50" | "all";
+
+export type View = "grid" | "list";
+
+export interface Ingredient {
+  id: string;
+  name: string;
+}
+
 export interface Recipe {
   id: number;
   title: string;

@@ -1,12 +1,16 @@
 import { Recipe } from "@/types";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Heart, ChevronRight, BookmarkPlus, Refrigerator } from "lucide-react";
+import { Heart, ChevronRight, BookmarkPlus, Refrigerator, Bookmark } from "lucide-react";
 import { useState } from "react";
+import { useUser } from "@/hooks/useUser";
+import { useFavorites } from "@/hooks/useFavorites";
 
 export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Recipe[]; viewMode?: "grid" | "list" }) {
   const { push } = useRouter();
+  const { user } = useUser();
   const [showMore, setShowMore] = useState<boolean[]>(Array(recipes.length).fill(false));
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
 
   const handleShowMore = (index: number) => {
     setShowMore((prev) => {
@@ -14,6 +18,14 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
       newShowMore[index] = !newShowMore[index];
       return newShowMore;
     });
+  };
+
+  const handleBookmark = async (recipeId: number) => {
+    if (isFavorite(recipeId)) {
+      await removeFavorite(recipeId);
+    } else {
+      await addFavorite(recipeId);
+    }
   };
 
   return (
@@ -35,7 +47,7 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
                   alt={recipe.title}
                   width={312}
                   height={231}
-                  objectFit="cover"
+                  priority
                   className="rounded-xl p-1"
                 />
               ) : (
@@ -48,12 +60,22 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
                 />
               )}
 
-              <button
-                role="button"
-                className="absolute top-2 right-2 bg-tertiary-light shadow-lg rounded-full p-2 drop-shadow-sm hover:bg-background-light hover:shadow-xl"
-              >
-                <BookmarkPlus className="w-6 h-6 text-primary-light dark:text-primary-dark" />
-              </button>
+              {user && (
+                <>
+                  <button
+                    role="button"
+                    name="toggle-favorite"
+                    onClick={() => handleBookmark(recipe.id)}
+                    className="absolute top-2 right-2 bg-tertiary-light shadow-lg rounded-full p-2 drop-shadow-sm hover:bg-background-light hover:shadow-xl"
+                  >
+                    {isFavorite(recipe.id) ? (
+                      <Bookmark className="w-6 h-6 text-primary-light dark:text-primary-dark fill-current" />
+                    ) : (
+                      <BookmarkPlus className="w-6 h-6 text-primary-light dark:text-primary-dark" />
+                    )}
+                  </button>
+                </>
+              )}
 
               <div className="p-4 flex-grow">
                 <h3 className="title font-medium text-lg text-secondary-light dark:text-secondary-dark group-hover:text-primary-light dark:group-hover:text-primary-dark transition-colors">
@@ -149,7 +171,7 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
                       alt={recipe.title}
                       width={200}
                       height={148}
-                      objectFit="cover"
+                      priority
                       className="rounded-xl"
                     />
                   ) : (

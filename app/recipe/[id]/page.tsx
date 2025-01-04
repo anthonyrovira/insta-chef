@@ -6,11 +6,10 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { RecipeInformation } from "@/types";
 import { Loader, ArrowLeft } from "lucide-react";
-import { AUTH_ROUTES } from "@/constants/auth";
 
 export default function RecipePage() {
   const params = useParams();
-  const { push } = useRouter();
+  const router = useRouter();
   const [recipe, setRecipe] = useState<RecipeInformation>(mockRecipe);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -42,7 +41,7 @@ export default function RecipePage() {
     <main className="min-h-screen p-8 bg-background-light dark:bg-background-dark">
       <div className="max-w-4xl mx-auto">
         <button
-          onClick={() => push(AUTH_ROUTES.HOME)}
+          onClick={() => router.back()}
           type="button"
           name="back"
           aria-label="Back to home"

@@ -1,21 +1,40 @@
 "use client";
 
-import { Recipe } from "@/types";
+import { Filter, Recipe, Sort, View } from "@/types";
 import RecipeCard from "./RecipeCard";
 import { useCallback, useMemo, useState } from "react";
-import { CircleChevronRight, CircleChevronLeft, LayoutGrid, LayoutList } from "lucide-react";
+import { CircleChevronRight, CircleChevronLeft, LayoutGrid, LayoutList, BookmarkX, ChefHat } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useUrlParams } from "@/hooks/useUrlParams";
 
-export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
-  const [sort, setSort] = useState<string>("relevance");
-  const [filter, setFilter] = useState<string>("all");
+interface SearchResultProps {
+  recipes: Recipe[];
+}
+
+export default function SearchResult({ recipes }: SearchResultProps) {
+  const { params, updateParams } = useUrlParams();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { user } = useUser();
+  const { favorites } = useFavorites();
   const RECIPES_PER_PAGE = 12 as const;
 
-  // sort recipes
+  const handleSortChange = (value: Sort) => {
+    updateParams({ sort: value });
+  };
+
+  const handleFilterChange = (value: Filter) => {
+    updateParams({ filter: value });
+  };
+
+  const handleViewModeChange = (mode: View) => {
+    updateParams({ view: mode });
+  };
+
+  // Sort recipes
   const sortRecipes = useCallback(
     (recipes: Recipe[]) => {
-      switch (sort) {
+      switch (params.sort) {
         case "likes-asc":
           return [...recipes].sort((a, b) => a.likes - b.likes);
         case "likes-desc":
@@ -32,30 +51,35 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
           return recipes; // Default: relevance
       }
     },
-    [sort]
+    [params.sort]
   );
 
-  // filter recipes
+  // Filter recipes
   const filterRecipes = useCallback(
     (recipes: Recipe[]) => {
-      switch (filter) {
+      let filteredRecipes = [...recipes];
+
+      switch (params.filter) {
+        case "favorites":
+          return filteredRecipes.filter((recipe) => favorites.includes(recipe.id));
         case "missing-5":
-          return recipes.filter((recipe) => recipe.missedIngredientCount <= 5);
+          return filteredRecipes.filter((recipe) => recipe.missedIngredientCount <= 5);
         case "missing-3":
-          return recipes.filter((recipe) => recipe.missedIngredientCount <= 3);
+          return filteredRecipes.filter((recipe) => recipe.missedIngredientCount <= 3);
         case "likes-10":
-          return recipes.filter((recipe) => recipe.likes >= 10);
+          return filteredRecipes.filter((recipe) => recipe.likes >= 10);
         case "likes-50":
-          return recipes.filter((recipe) => recipe.likes >= 50);
+          return filteredRecipes.filter((recipe) => recipe.likes >= 50);
+        case "all":
         default:
-          return recipes; // Default: all
+          return filteredRecipes; // Default: all
       }
     },
-    [filter]
+    [params.filter, favorites]
   );
 
-  const sortedRecipes = useMemo(() => sortRecipes(recipes), [recipes, sort]);
-  const filteredRecipes = useMemo(() => filterRecipes(sortedRecipes), [sortedRecipes, filter]);
+  const sortedRecipes = useMemo(() => sortRecipes(recipes), [recipes, params.sort]);
+  const filteredRecipes = useMemo(() => filterRecipes(sortedRecipes), [sortedRecipes, params.filter]);
 
   // Compute paginated recipes
   const paginatedRecipes = useMemo(() => {
@@ -79,7 +103,7 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
     <div className="w-full mt-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <h2 className="text-2xl font-semibold text-secondary-light dark:text-secondary-dark">
-          Recipes found <span className="text-primary-light dark:text-primary-dark">({recipes.length})</span>
+          Recipes found <span className="text-primary-light dark:text-primary-dark">({filteredRecipes.length})</span>
         </h2>
 
         <div className="flex flex-wrap gap-4 ">
@@ -90,7 +114,8 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
             <select
               id="sort"
               className="px-3 h-9 rounded-lg border border-tertiary-light dark:border-tertiary-dark bg-background-light dark:bg-background-dark text-secondary-light dark:text-secondary-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-              onChange={(e) => setSort(e.target.value)}
+              onChange={(e) => handleSortChange(e.target.value as Sort)}
+              value={params.sort || "relevance"}
             >
               <option value="relevance">Relevance</option>
               <option value="likes-asc">Likes (Low to High)</option>
@@ -109,9 +134,11 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
             <select
               id="filter"
               className="px-3 h-9 rounded-lg border border-tertiary-light dark:border-tertiary-dark bg-background-light dark:bg-background-dark text-secondary-light dark:text-secondary-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
-              onChange={(e) => setFilter(e.target.value)}
+              onChange={(e) => handleFilterChange(e.target.value as Filter)}
+              value={params.filter || "all"}
             >
               <option value="all">All</option>
+              {user && <option value="favorites">Favorites only</option>}
               <option value="missing-5">5 missing ingredients or less</option>
               <option value="missing-3">3 missing ingredients or less</option>
               <option value="likes-10">10+ likes</option>
@@ -123,16 +150,34 @@ export default function SearchResult({ recipes }: { recipes: Recipe[] }) {
             <button
               aria-label="Toggle view mode"
               name="view-mode"
-              onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+              onClick={() => handleViewModeChange(params.view === "grid" ? "list" : "grid")}
               className="p-2 w-9 h-9 rounded-lg border border-tertiary-light dark:border-tertiary-dark hover:bg-background-dark/10"
             >
-              {viewMode === "grid" ? <LayoutList size={18} /> : <LayoutGrid size={18} />}
+              {params.view === "grid" ? <LayoutList size={18} /> : <LayoutGrid size={18} />}
             </button>
           </div>
         </div>
       </div>
 
-      <RecipeCard recipes={paginatedRecipes} viewMode={viewMode} />
+      {params.filter === "favorites" && paginatedRecipes.length === 0 && (
+        <div className="flex flex-col items-center justify-center gap-6 py-12 px-4">
+          <BookmarkX className="w-16 h-16 text-secondary-light dark:text-secondary-dark opacity-80" />
+
+          <div className="text-center space-y-2 max-w-md">
+            <h3 className="text-xl font-semibold text-secondary-light dark:text-secondary-dark">No favorite recipes found</h3>
+            <p className="text-secondary-light/70 dark:text-secondary-dark/70">
+              Looks like you haven't bookmarked any recipes from your current search yet.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 text-primary-light dark:text-primary-dark mt-2">
+            <ChefHat className="w-5 h-5" />
+            <span className="text-sm font-medium">Start bookmarking recipes to see them here!</span>
+          </div>
+        </div>
+      )}
+
+      <RecipeCard recipes={paginatedRecipes} viewMode={params.view || "grid"} />
 
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-8">
