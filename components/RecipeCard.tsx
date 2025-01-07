@@ -49,6 +49,7 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
         toast.success("Recipe added to favorites");
       }
     } catch (error) {
+      console.error("Error toggling favorite:", error);
       toast.error("An error occurred");
     }
   };

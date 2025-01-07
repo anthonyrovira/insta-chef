@@ -122,7 +122,7 @@ export default function SearchResult({ recipes }: SearchResultProps) {
           <div className="text-center space-y-2 max-w-md">
             <h3 className="text-xl font-semibold text-secondary-light dark:text-secondary-dark">No favorite recipes found</h3>
             <p className="text-secondary-light/70 dark:text-secondary-dark/70">
-              Looks like you haven't bookmarked any recipes from your current search yet.
+              Looks like you haven&apos;t bookmarked any recipes from your current search yet.
             </p>
           </div>
 

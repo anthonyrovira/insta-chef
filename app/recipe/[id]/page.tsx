@@ -19,7 +19,7 @@ export default function RecipePage() {
   const userSession = useUser();
   const [recipe, setRecipe] = useState<RecipeInformation>(mockRecipe);
   const [loading, setLoading] = useState<boolean>(true);
-  const { isFavorite, addFavorite, removeFavorite, error, clearError } = useFavorites();
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -57,6 +57,7 @@ export default function RecipePage() {
         toast.success("Recipe added to favorites");
       }
     } catch (error) {
+      console.error("Error toggling favorite:", error);
       toast.error("An error occurred");
     }
   };
