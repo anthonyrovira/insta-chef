@@ -6,6 +6,7 @@ import "./styles/reset.css";
 import "./styles/globals.css";
 import Header from "@/components/Header";
 import { validateConfig } from "@/config/supabase";
+import Footer from "@/components/Footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -65,6 +66,7 @@ export default function RootLayout({
             <Header />
             {children}
           </main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
