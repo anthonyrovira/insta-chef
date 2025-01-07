@@ -2,11 +2,13 @@
 
 import { Filter, Recipe, Sort, View } from "@/types";
 import RecipeCard from "./RecipeCard";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CircleChevronRight, CircleChevronLeft, LayoutGrid, LayoutList, BookmarkX, ChefHat } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useUrlParams } from "@/hooks/useUrlParams";
+import { filterRecipes, paginateRecipes, sortRecipes } from "@/utils/core";
+import { RECIPES_PER_PAGE } from "@/constants";
 
 interface SearchResultProps {
   recipes: Recipe[];
@@ -15,9 +17,8 @@ interface SearchResultProps {
 export default function SearchResult({ recipes }: SearchResultProps) {
   const { params, updateParams } = useUrlParams();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const { user } = useUser();
+  const userSession = useUser();
   const { favorites } = useFavorites();
-  const RECIPES_PER_PAGE = 12 as const;
 
   const handleSortChange = (value: Sort) => {
     updateParams({ sort: value });
@@ -31,62 +32,17 @@ export default function SearchResult({ recipes }: SearchResultProps) {
     updateParams({ view: mode });
   };
 
-  // Sort recipes
-  const sortRecipes = useCallback(
-    (recipes: Recipe[]) => {
-      switch (params.sort) {
-        case "likes-asc":
-          return [...recipes].sort((a, b) => a.likes - b.likes);
-        case "likes-desc":
-          return [...recipes].sort((a, b) => b.likes - a.likes);
-        case "ingredients-asc":
-          return [...recipes].sort((a, b) => a.usedIngredientCount - b.usedIngredientCount);
-        case "ingredients-desc":
-          return [...recipes].sort((a, b) => b.usedIngredientCount - a.usedIngredientCount);
-        case "missing-asc":
-          return [...recipes].sort((a, b) => a.missedIngredientCount - b.missedIngredientCount);
-        case "missing-desc":
-          return [...recipes].sort((a, b) => b.missedIngredientCount - a.missedIngredientCount);
-        default:
-          return recipes; // Default: relevance
-      }
-    },
-    [params.sort]
+  const sortedRecipes = useMemo(() => sortRecipes(recipes, params.sort || "relevance"), [recipes, params.sort]);
+  const filteredRecipes = useMemo(
+    () => filterRecipes(sortedRecipes, params.filter || "all", favorites),
+    [sortedRecipes, params.filter, favorites]
   );
-
-  // Filter recipes
-  const filterRecipes = useCallback(
-    (recipes: Recipe[]) => {
-      let filteredRecipes = [...recipes];
-
-      switch (params.filter) {
-        case "favorites":
-          return filteredRecipes.filter((recipe) => favorites.includes(recipe.id));
-        case "missing-5":
-          return filteredRecipes.filter((recipe) => recipe.missedIngredientCount <= 5);
-        case "missing-3":
-          return filteredRecipes.filter((recipe) => recipe.missedIngredientCount <= 3);
-        case "likes-10":
-          return filteredRecipes.filter((recipe) => recipe.likes >= 10);
-        case "likes-50":
-          return filteredRecipes.filter((recipe) => recipe.likes >= 50);
-        case "all":
-        default:
-          return filteredRecipes; // Default: all
-      }
-    },
-    [params.filter, favorites]
-  );
-
-  const sortedRecipes = useMemo(() => sortRecipes(recipes), [recipes, params.sort]);
-  const filteredRecipes = useMemo(() => filterRecipes(sortedRecipes), [sortedRecipes, params.filter]);
 
   // Compute paginated recipes
-  const paginatedRecipes = useMemo(() => {
-    const startIndex = (currentPage - 1) * RECIPES_PER_PAGE;
-    const endIndex = startIndex + RECIPES_PER_PAGE;
-    return filteredRecipes.slice(startIndex, endIndex);
-  }, [filteredRecipes, currentPage]);
+  const paginatedRecipes = useMemo(
+    () => paginateRecipes(filteredRecipes, currentPage, RECIPES_PER_PAGE),
+    [filteredRecipes, currentPage]
+  );
 
   // Compute total pages
   const totalPages = Math.ceil(filteredRecipes.length / RECIPES_PER_PAGE);
@@ -138,7 +94,7 @@ export default function SearchResult({ recipes }: SearchResultProps) {
               value={params.filter || "all"}
             >
               <option value="all">All</option>
-              {user && <option value="favorites">Favorites only</option>}
+              {userSession && <option value="favorites">Favorites only</option>}
               <option value="missing-5">5 missing ingredients or less</option>
               <option value="missing-3">3 missing ingredients or less</option>
               <option value="likes-10">10+ likes</option>

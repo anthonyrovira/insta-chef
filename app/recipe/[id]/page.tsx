@@ -10,11 +10,13 @@ import { getRecipeInformation } from "@/services/api";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast, Toaster } from "sonner";
 import { useUser } from "@/hooks/useUser";
+import { getHealthScoreColor } from "@/utils/core";
+import { track } from "@vercel/analytics";
 
 export default function RecipePage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useUser();
+  const userSession = useUser();
   const [recipe, setRecipe] = useState<RecipeInformation>(mockRecipe);
   const [loading, setLoading] = useState<boolean>(true);
   const { isFavorite, addFavorite, removeFavorite, error, clearError } = useFavorites();
@@ -34,19 +36,23 @@ export default function RecipePage() {
     fetchRecipe();
   }, [params.id]);
 
-  const getHealthScoreColor = (score: number) => {
-    if (score <= 33) return "text-red-500";
-    if (score <= 66) return "text-yellow-500";
-    return "text-green-500";
-  };
-
-  const handleFavoriteClick = async () => {
+  const handleToggleFavorite = async () => {
     const recipeId = Number(params.id);
     try {
       if (isFavorite(recipeId)) {
+        track("recipe_bookmark_remove", {
+          recipe_id: recipeId,
+          timestamp: new Date().toISOString(),
+        });
+
         await removeFavorite(recipeId);
         toast.success("Recipe removed from favorites");
       } else {
+        track("recipe_bookmark_add", {
+          recipe_id: recipeId,
+          timestamp: new Date().toISOString(),
+        });
+
         await addFavorite(recipeId);
         toast.success("Recipe added to favorites");
       }
@@ -89,9 +95,9 @@ export default function RecipePage() {
                 <Heart className="size-5" />
                 <span>{recipe.aggregateLikes}</span>
               </div>
-              {user && (
+              {userSession && (
                 <button
-                  onClick={handleFavoriteClick}
+                  onClick={handleToggleFavorite}
                   className="flex items-center gap-2 text-primary-light dark:text-primary-dark hover:opacity-80 transition-opacity"
                   aria-label={isFavorite(Number(params.id)) ? "Retirer des favoris" : "Ajouter aux favoris"}
                 >

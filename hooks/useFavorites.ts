@@ -15,7 +15,7 @@ export const useFavorites = () => {
     isLoading: true,
     error: null,
   });
-  const { user } = useUser();
+  const userSession = useUser();
   const supabase = createClient();
 
   /**
@@ -41,13 +41,13 @@ export const useFavorites = () => {
    * @returns void
    */
   const loadFavorites = async () => {
-    if (!user) {
+    if (!userSession) {
       setFavoritesState({ favorites: [], isLoading: false, error: null });
       return;
     }
 
     try {
-      const { data, error } = await supabase.from("favorites").select("recipe_id").eq("user_id", user.id);
+      const { data, error } = await supabase.from("favorites").select("recipe_id").eq("user_id", userSession.id);
 
       if (error) throw error;
 
@@ -72,7 +72,7 @@ export const useFavorites = () => {
    * @returns void
    */
   const addFavorite = async (recipeId: number) => {
-    if (!user) {
+    if (!userSession) {
       setFavoritesState((prev) => ({
         ...prev,
         error: "Please log in to save favorites",
@@ -81,7 +81,7 @@ export const useFavorites = () => {
     }
 
     try {
-      const { error } = await supabase.from("favorites").insert({ user_id: user.id, recipe_id: recipeId });
+      const { error } = await supabase.from("favorites").insert({ user_id: userSession.id, recipe_id: recipeId });
 
       if (error) throw error;
 
@@ -111,7 +111,7 @@ export const useFavorites = () => {
    * @returns void
    */
   const removeFavorite = async (recipeId: number) => {
-    if (!user) {
+    if (!userSession) {
       setFavoritesState((prev) => ({
         ...prev,
         error: "Please log in to manage favorites",
@@ -120,7 +120,7 @@ export const useFavorites = () => {
     }
 
     try {
-      const { error } = await supabase.from("favorites").delete().eq("user_id", user.id).eq("recipe_id", recipeId);
+      const { error } = await supabase.from("favorites").delete().eq("user_id", userSession.id).eq("recipe_id", recipeId);
 
       if (error) throw error;
 
@@ -154,7 +154,7 @@ export const useFavorites = () => {
 
   useEffect(() => {
     loadFavorites();
-  }, [user]);
+  }, [userSession]);
 
   return {
     favorites: favoritesState.favorites,

@@ -5,9 +5,3 @@ export interface UserSession {
   email: string | undefined;
   user_metadata: UserMetadata;
 }
-
-export interface AuthState {
-  user: UserSession | null;
-  isLoading: boolean;
-  error: Error | null;
-}

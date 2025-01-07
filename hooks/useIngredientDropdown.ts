@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Ingredient } from "@/types";
+import { filterIngredients } from "@/utils/core";
 
 export const useIngredientDropdown = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -33,11 +34,7 @@ export const useIngredientDropdown = () => {
    * @returns The filtered ingredients
    */
   const filteredIngredients = (ingredients: Ingredient[], selectedTags: Ingredient[], inputValue: string) => {
-    const filtered = ingredients.filter(
-      (ingredient) =>
-        ingredient.name.toLowerCase().includes(inputValue.toLowerCase()) &&
-        !selectedTags.some((tag) => tag.name === ingredient.name)
-    );
+    const filtered = filterIngredients(ingredients, selectedTags, inputValue);
 
     // If the input is not empty and does not match any existing ingredient
     if (inputValue && !ingredients.some((ing) => ing.name.toLowerCase() === inputValue.toLowerCase())) {

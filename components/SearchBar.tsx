@@ -10,6 +10,7 @@ import { useRecipeSearch } from "@/hooks/useRecipeSearch";
 import { Search } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { useCallback, useState } from "react";
+import { track } from "@vercel/analytics";
 
 export interface SearchBarProps {
   handleSetRecipes: (newRecipes: Recipe[]) => void;
@@ -31,6 +32,12 @@ export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBa
   const handleSearch = useCallback(() => {
     const ingredients = selectedTags.map((tag) => tag.name);
     searchRecipes(ingredients);
+
+    // Track recipe search
+    track("recipe_search", {
+      query: ingredients.join(", "),
+      timestamp: new Date().toISOString(),
+    });
   }, [selectedTags, searchRecipes]);
 
   const { isDropdownOpen, setIsDropdownOpen, inputRef, dropdownRef, filteredIngredients } = useIngredientDropdown();

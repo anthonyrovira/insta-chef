@@ -22,3 +22,5 @@ export const defaultIngredients: Ingredient[] = [
   { id: uuidv4(), name: "Garlic" },
   { id: uuidv4(), name: "Onion" },
 ] as const;
+
+export const RECIPES_PER_PAGE = 12 as const;

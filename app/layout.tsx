@@ -1,5 +1,4 @@
-import type { Metadata } from "next";
-import Head from "next/head";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./styles/reset.css";
@@ -7,6 +6,8 @@ import "./styles/globals.css";
 import Header from "@/components/Header";
 import { validateConfig } from "@/config/supabase";
 import Footer from "@/components/Footer";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -20,11 +21,53 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1.0,
+  themeColor: "#4A4A4A",
+};
+
 export const metadata: Metadata = {
   title: "InstaChef",
   description: "InstaChef is a recipe finder that uses your pantry to find the perfect recipe for you!",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/android-icon-36x36.png", sizes: "36x36", type: "image/png" },
+      { url: "/android-icon-48x48.png", sizes: "48x48", type: "image/png" },
+      { url: "/android-icon-72x72.png", sizes: "72x72", type: "image/png" },
+      { url: "/android-icon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/android-icon-144x144.png", sizes: "144x144", type: "image/png" },
+      { url: "/android-icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon.png" },
+      { url: "/apple-icon-57x57.png", sizes: "57x57", type: "image/png" },
+      { url: "/apple-icon-60x60.png", sizes: "60x60", type: "image/png" },
+      { url: "/apple-icon-72x72.png", sizes: "72x72", type: "image/png" },
+      { url: "/apple-icon-76x76.png", sizes: "76x76", type: "image/png" },
+      { url: "/apple-icon-114x114.png", sizes: "114x114", type: "image/png" },
+      { url: "/apple-icon-120x120.png", sizes: "120x120", type: "image/png" },
+      { url: "/apple-icon-144x144.png", sizes: "144x144", type: "image/png" },
+      { url: "/apple-icon-152x152.png", sizes: "152x152", type: "image/png" },
+      { url: "/apple-icon-180x180.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#FF8A50" },
+      { rel: "apple-touch-icon", url: "/apple-icon.png" },
+      { rel: "android-chrome-192x192", url: "/android-chrome-192x192.png" },
+      { rel: "android-chrome-512x512", url: "/android-chrome-512x512.png" },
+    ],
+  },
+  manifest: "/site.webmanifest",
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "InstaChef",
+    "msapplication-TileColor": "#FF8A50",
+    "msapplication-TileImage": "/ms-icon-144x144.png",
+    "msapplication-config": "/browserconfig.xml",
   },
 };
 
@@ -37,27 +80,6 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning className="scrollbar">
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png" />
-        <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png" />
-        <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png" />
-        <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png" />
-        <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png" />
-        <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png" />
-        <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="msapplication-TileColor" content="#4A4A4A" />
-        <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
-        <meta name="theme-color" content="#4A4A4A" />
-      </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background-light dark:bg-background-dark text-secondary-light dark:text-secondary-dark`}
       >
@@ -65,6 +87,8 @@ export default function RootLayout({
           <main>
             <Header />
             {children}
+            <Analytics />
+            <SpeedInsights />
           </main>
           <Footer />
         </ThemeProvider>

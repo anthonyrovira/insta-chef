@@ -1,14 +1,10 @@
-import { AuthState } from "@/types/auth";
+import { UserSession } from "@/types/auth";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
 export const useUser = () => {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isLoading: true,
-    error: null,
-  });
+  const [userSession, setUserSession] = useState<UserSession | null>(null);
 
   /**
    * Map a user to a session
@@ -38,17 +34,9 @@ export const useUser = () => {
         } = await supabase.auth.getUser();
         if (error) throw new Error(error.message);
 
-        setAuthState((prev) => ({
-          ...prev,
-          user: user ? mapUserToSession(user) : null,
-          isLoading: false,
-        }));
+        setUserSession(user ? mapUserToSession(user) : null);
       } catch (error) {
-        setAuthState((prev) => ({
-          ...prev,
-          error: error as Error,
-          isLoading: false,
-        }));
+        setUserSession(null);
       }
     };
 
@@ -57,15 +45,11 @@ export const useUser = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setAuthState((prev) => ({
-        ...prev,
-        user: session?.user ? mapUserToSession(session.user) : null,
-        isLoading: false,
-      }));
+      setUserSession(session?.user ? mapUserToSession(session.user) : null);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  return authState;
+  return userSession;
 };

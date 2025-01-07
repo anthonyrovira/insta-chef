@@ -1,4 +1,4 @@
-import { Recipe } from "@/types";
+import { Recipe, View } from "@/types";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Heart, ChevronRight, BookmarkPlus, Refrigerator, Bookmark } from "lucide-react";
@@ -7,6 +7,7 @@ import { useUser } from "@/hooks/useUser";
 import { useFavorites } from "@/hooks/useFavorites";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import { toast, Toaster } from "sonner";
+import { track } from "@vercel/analytics";
 
 const IngredientPill = ({ name }: { name: string }) => (
   <span className="text-xs table-cell max-w-[150px] truncate" title={name}>
@@ -14,9 +15,9 @@ const IngredientPill = ({ name }: { name: string }) => (
   </span>
 );
 
-export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Recipe[]; viewMode?: "grid" | "list" }) {
+export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Recipe[]; viewMode?: View }) {
   const { push } = useRouter();
-  const { user } = useUser();
+  const userSession = useUser();
   const [showMore, setShowMore] = useState<boolean[]>(Array(recipes.length).fill(false));
   const { isFavorite, addFavorite, removeFavorite, error, clearError } = useFavorites();
 
@@ -31,9 +32,19 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
   const handleBookmark = async (recipeId: number) => {
     try {
       if (isFavorite(recipeId)) {
+        track("recipe_bookmark_remove", {
+          recipe_id: recipeId,
+          timestamp: new Date().toISOString(),
+        });
+
         await removeFavorite(recipeId);
         toast.success("Recipe removed from favorites");
       } else {
+        track("recipe_bookmark_add", {
+          recipe_id: recipeId,
+          timestamp: new Date().toISOString(),
+        });
+
         await addFavorite(recipeId);
         toast.success("Recipe added to favorites");
       }
@@ -77,7 +88,7 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
                   />
                 )}
 
-                {user && (
+                {userSession && (
                   <button
                     role="button"
                     name="toggle-favorite"

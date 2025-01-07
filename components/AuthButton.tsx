@@ -7,7 +7,7 @@ import { AUTH_ROUTES } from "@/constants/auth";
 
 export default function AuthButton() {
   const supabase = createClient();
-  const { user, error, isLoading } = useUser();
+  const userSession = useUser();
   const handleClickLogOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -23,7 +23,7 @@ export default function AuthButton() {
 
   return (
     <>
-      {user ? (
+      {userSession ? (
         <button
           type="button"
           name="logout"
@@ -34,7 +34,7 @@ export default function AuthButton() {
           <div className="relative group">
             <Image
               loading="lazy"
-              src={user.user_metadata.avatar_url}
+              src={userSession.user_metadata.avatar_url}
               alt="User avatar"
               width={40}
               height={40}
