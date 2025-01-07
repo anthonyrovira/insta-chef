@@ -83,7 +83,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background-light dark:bg-background-dark text-secondary-light dark:text-secondary-dark`}
       >
-        <ThemeProvider attribute="class" storageKey="instatheme" defaultTheme="system" enableSystem>
+        <ThemeProvider
+          attribute="class"
+          storageKey="instachef-theme"
+          defaultTheme="system"
+          themes={["light", "dark"]}
+          enableSystem
+        >
           <main>
             <Header />
             {children}

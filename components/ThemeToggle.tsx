@@ -5,11 +5,17 @@ import { useTheme } from "next-themes";
 
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState<boolean>(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, systemTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (theme === "system" && systemTheme) {
+      setTheme(systemTheme);
+    }
+  }, [systemTheme]);
 
   if (!mounted) {
     return null;
