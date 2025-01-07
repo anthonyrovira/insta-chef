@@ -10,6 +10,11 @@ export const useUser = () => {
     error: null,
   });
 
+  /**
+   * Map a user to a session
+   * @param user - The user to map
+   * @returns The session
+   */
   const mapUserToSession = (user: User) => {
     return {
       id: user.id,
@@ -21,6 +26,10 @@ export const useUser = () => {
   useEffect(() => {
     const supabase = createClient();
 
+    /**
+     * Initialize the user
+     * @returns void
+     */
     const initializeUser = async () => {
       try {
         const {

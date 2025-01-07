@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { createClient } from '@/utils/supabase/client';
-import { useUser } from './useUser';
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { useUser } from "./useUser";
+import { PostgrestError } from "@supabase/supabase-js";
 
 interface FavoritesState {
   favorites: number[];
@@ -17,6 +18,28 @@ export const useFavorites = () => {
   const { user } = useUser();
   const supabase = createClient();
 
+  /**
+   * Handle Supabase errors
+   * @param error - The error to handle
+   * @returns A string describing the error
+   */
+  const handleSupabaseError = (error: PostgrestError) => {
+    switch (error.code) {
+      case "PGRST116":
+        return "Invalid API key or authentication failed";
+      case "42501":
+        return "You don't have permission to perform this action";
+      case "23505":
+        return "This recipe is already in your favorites";
+      default:
+        return `Database error: ${error.message}`;
+    }
+  };
+
+  /**
+   * Load favorites
+   * @returns void
+   */
   const loadFavorites = async () => {
     if (!user) {
       setFavoritesState({ favorites: [], isLoading: false, error: null });
@@ -24,58 +47,110 @@ export const useFavorites = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('recipe_id')
-        .eq('user_id', user.id);
+      const { data, error } = await supabase.from("favorites").select("recipe_id").eq("user_id", user.id);
 
       if (error) throw error;
 
-      setFavoritesState({ favorites: data.map(fav => fav.recipe_id), isLoading: false, error: null });
+      setFavoritesState({
+        favorites: data.map((fav) => fav.recipe_id),
+        isLoading: false,
+        error: null,
+      });
     } catch (error) {
-      console.error('Error loading favorites:', error);
-    } finally {
-      setFavoritesState({ favorites: [], isLoading: false, error: null });
+      const errorMessage = error instanceof Error ? error.message : "Failed to load favorites";
+      setFavoritesState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: errorMessage,
+      }));
     }
   };
 
+  /**
+   * Add a favorite recipe
+   * @param recipeId - The ID of the recipe to add
+   * @returns void
+   */
   const addFavorite = async (recipeId: number) => {
-    if (!user) return;
+    if (!user) {
+      setFavoritesState((prev) => ({
+        ...prev,
+        error: "Please log in to save favorites",
+      }));
+      return;
+    }
 
     try {
-      const { error } = await supabase
-        .from('favorites')
-        .insert({ user_id: user.id, recipe_id: recipeId });
+      const { error } = await supabase.from("favorites").insert({ user_id: user.id, recipe_id: recipeId });
 
       if (error) throw error;
 
-      setFavoritesState(prev => ({ ...prev, favorites: [...prev.favorites, recipeId] }));
+      setFavoritesState((prev) => ({
+        ...prev,
+        favorites: [...prev.favorites, recipeId],
+        error: null,
+      }));
     } catch (error) {
-      console.error('Error adding favorite:', error);
+      if (error && typeof error === "object" && "code" in error) {
+        setFavoritesState((prev) => ({
+          ...prev,
+          error: handleSupabaseError(error as PostgrestError),
+        }));
+      } else {
+        setFavoritesState((prev) => ({
+          ...prev,
+          error: "Failed to add favorite",
+        }));
+      }
     }
   };
 
-  // Retirer des favoris
+  /**
+   * Remove a favorite recipe
+   * @param recipeId - The ID of the recipe to remove
+   * @returns void
+   */
   const removeFavorite = async (recipeId: number) => {
-    if (!user) return;
+    if (!user) {
+      setFavoritesState((prev) => ({
+        ...prev,
+        error: "Please log in to manage favorites",
+      }));
+      return;
+    }
 
     try {
-      const { error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('recipe_id', recipeId);
+      const { error } = await supabase.from("favorites").delete().eq("user_id", user.id).eq("recipe_id", recipeId);
 
       if (error) throw error;
 
-      setFavoritesState(prev => ({ ...prev, favorites: prev.favorites.filter(id => id !== recipeId) }));
+      setFavoritesState((prev) => ({
+        ...prev,
+        favorites: prev.favorites.filter((id) => id !== recipeId),
+        error: null,
+      }));
     } catch (error) {
-      console.error('Error removing favorite:', error);
+      if (error && typeof error === "object" && "code" in error) {
+        setFavoritesState((prev) => ({
+          ...prev,
+          error: handleSupabaseError(error as PostgrestError),
+        }));
+      } else {
+        setFavoritesState((prev) => ({
+          ...prev,
+          error: "Failed to remove favorite",
+        }));
+      }
     }
   };
 
-
-  const isFavorite = (recipeId: number) => favoritesState.favorites.includes(recipeId);
+  /**
+   * Clear the error state
+   * @returns void
+   */
+  const clearError = () => {
+    setFavoritesState((prev) => ({ ...prev, error: null }));
+  };
 
   useEffect(() => {
     loadFavorites();
@@ -87,6 +162,7 @@ export const useFavorites = () => {
     error: favoritesState.error,
     addFavorite,
     removeFavorite,
-    isFavorite
+    isFavorite: (recipeId: number) => favoritesState.favorites.includes(recipeId),
+    clearError,
   };
-}; 
+};

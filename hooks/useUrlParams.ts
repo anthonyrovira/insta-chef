@@ -13,7 +13,10 @@ export const useUrlParams = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get current params
+  /**
+   * Get current params
+   * @returns The current params
+   */
   const getCurrentParams = useCallback((): SearchUrlParams => {
     return {
       ingredients: searchParams.get("ingredients")?.split(",") || [],
@@ -23,7 +26,11 @@ export const useUrlParams = () => {
     };
   }, [searchParams]);
 
-  // Update params
+  /**
+   * Update params
+   * @param updates - The updates to apply
+   * @returns void
+   */
   const updateParams = useCallback(
     (updates: Partial<SearchUrlParams>) => {
       const params = new URLSearchParams(searchParams.toString());

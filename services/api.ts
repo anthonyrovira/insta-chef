@@ -1,7 +1,7 @@
 import { SUPABASE_CONFIG } from "@/config/supabase";
 import { Recipe } from "@/types";
 
-const API_BASE_URL = "https://api.spoonacular.com";
+const API_BASE_URL = "https://api.spoonacular.com" as const;
 
 interface FindByIngredientsParams {
   ingredients: string[];
@@ -10,6 +10,11 @@ interface FindByIngredientsParams {
   ignorePantry?: boolean;
 }
 
+/**
+ * Find recipes by ingredients
+ * @param params - The parameters to use
+ * @returns The recipes
+ */
 export async function findRecipesByIngredients({
   ingredients,
   number = 100,
@@ -37,8 +42,7 @@ export async function findRecipesByIngredients({
       throw new Error(`API call failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error fetching recipes:", error);
     throw error;
