@@ -19,6 +19,26 @@
 - **Icons**: Lucide React
 - **State Management**: React Hooks
 - **TypeScript**: Strict typing for a robust codebase
+- 
+## URL Parameters
+
+Instachef utilizes URL-based state management for a better user experience, example url:
+```
+/recipes?ingredients=onion,garlic&sort=asc&view=grid&page=1
+```	
+
+This approach offers several benefits:
+- **Shareable recipe searches**: Users can share their exact search results with others
+- **Bookmarkable results**: Save specific searches for later use
+- **Browser history navigation**: Use browser back/forward buttons to navigate through search history
+- **SEO-friendly URLs**: Better indexing of recipe searches
+- **State persistence**: Maintain search state across page refreshes and browser sessions
+
+The URL parameters control:
+- **ingredients**: List of ingredients to search for
+- **sort**: Recipe sorting method (by likes, relevance, or missing ingredients)
+- **filter**: Filter recipes by specific criteria
+- **view**: Display mode for recipe results (grid or list)
 
 ## Installation
 
