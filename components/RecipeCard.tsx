@@ -8,6 +8,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import { toast, Toaster } from "sonner";
 import { track } from "@vercel/analytics";
+import { SPOONACULAR_API_KEYS } from "@/services/api";
 
 const IngredientPill = ({ name }: { name: string }) => (
   <span className="text-xs table-cell max-w-[150px] truncate" title={name}>
@@ -20,6 +21,8 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
   const userSession = useUser();
   const [showMore, setShowMore] = useState<boolean[]>(Array(recipes.length).fill(false));
   const { isFavorite, addFavorite, removeFavorite, error, clearError } = useFavorites();
+  const [retryCount, setRetryCount] = useState<number>(0);
+  const [apiKey, setApiKey] = useState<string>(SPOONACULAR_API_KEYS[retryCount]);
 
   const handleShowMore = (index: number) => {
     setShowMore((prev) => {
@@ -27,6 +30,13 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
       newShowMore[index] = !newShowMore[index];
       return newShowMore;
     });
+  };
+
+  const handleImageError = () => {
+    if (retryCount < SPOONACULAR_API_KEYS.length - 1) {
+      setRetryCount((prev) => prev + 1);
+      setApiKey(SPOONACULAR_API_KEYS[retryCount + 1]);
+    }
   };
 
   const handleBookmark = async (recipeId: number) => {
@@ -72,10 +82,11 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
               <div className="relative bg-background-light dark:bg-background-dark border border-tertiary-light dark:border-tertiary-dark rounded-xl shadow-sm drop-shadow-sm hover:shadow-orange-400  hover:shadow-sm h-full w-fit">
                 {recipe.image ? (
                   <Image
-                    src={`${recipe.image}?apiKey=${process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY}`}
+                    src={`${recipe.image}?apiKey=${apiKey}`}
                     alt={recipe.title}
                     width={312}
                     height={231}
+                    onError={handleImageError}
                     priority
                     className="rounded-xl p-1"
                   />
@@ -186,10 +197,11 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
                   <div className="flex justify-center items-center w-full sm:w-[200px] h-auto flex-shrink-0 mr-0 mb-4 sm:mb-0 sm:mr-4">
                     {recipe.image ? (
                       <Image
-                        src={`${recipe.image}?apiKey=${process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY}`}
+                        src={`${recipe.image}?apiKey=${apiKey}`}
                         alt={recipe.title}
                         width={200}
                         height={148}
+                        onError={handleImageError}
                         priority
                         className="rounded-xl"
                       />

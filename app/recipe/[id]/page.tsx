@@ -85,7 +85,7 @@ export default function RecipePage() {
           Back
         </button>
         <div className="relative w-full h-96 rounded-xl overflow-hidden mb-8">
-          {recipe.image && <Image src={recipe.image} alt={recipe.title} fill className="object-cover" />}
+          {recipe.image && <Image src={recipe.image} alt={recipe.title} priority fill className="object-cover" />}
         </div>
 
         <div className="mb-8">

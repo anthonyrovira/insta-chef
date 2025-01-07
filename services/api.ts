@@ -10,6 +10,48 @@ interface FindByIngredientsParams {
   ignorePantry?: boolean;
 }
 
+export const SPOONACULAR_API_KEYS = [
+  process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY_1 as string,
+  process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY_2 as string,
+  process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY_3 as string,
+] as const;
+
+/**
+ * Make a request with failover
+ * @param url - The URL to make the request to
+ * @param params - The parameters to use
+ * @returns The response
+ */
+async function makeRequestWithFailover(url: string, params?: URLSearchParams): Promise<Response> {
+  for (const apiKey of SPOONACULAR_API_KEYS) {
+    try {
+      // Add the API key to the URL and the params if they exist
+      const finalUrl = `${url}?apiKey=${apiKey}${params ? `&${params}` : ""}`;
+
+      // Make the request
+      const response = await fetch(finalUrl);
+
+      // If the request is successful, return the response
+      if (response.ok) return response;
+
+      // If the request is rate limited or payment required, continue with the next API key
+      if (response.status === 429 || response.status === 402) continue;
+
+      // If the request fails for any other reason, throw an error
+      throw new Error(`API call failed: ${response.statusText}`);
+    } catch (error) {
+      // If the last API key fails, throw the error
+      if (apiKey === SPOONACULAR_API_KEYS[SPOONACULAR_API_KEYS.length - 1]) {
+        throw error;
+      }
+      // Otherwise, continue with the next API key
+      continue;
+    }
+  }
+  // If all API keys have failed, throw an error
+  throw new Error("All API keys have failed");
+}
+
 /**
  * Find recipes by ingredients
  * @param params - The parameters to use
@@ -29,18 +71,7 @@ export async function findRecipesByIngredients({
       ignorePantry: ignorePantry.toString(),
     });
 
-    const response = await fetch(
-      `${API_BASE_URL}/recipes/findByIngredients?apiKey=${process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY}&${params}`,
-      {
-        headers: {
-          "x-api-key": SUPABASE_CONFIG.anonKey || "",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`API call failed: ${response.statusText}`);
-    }
+    const response = await makeRequestWithFailover(`${API_BASE_URL}/recipes/findByIngredients`, params);
 
     return await response.json();
   } catch (error) {
@@ -56,13 +87,7 @@ export async function findRecipesByIngredients({
  */
 export async function getRecipeInformation(id: number): Promise<RecipeInformation> {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/recipes/${id}/information?apiKey=${process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`API call failed: ${response.statusText}`);
-    }
+    const response = await makeRequestWithFailover(`${API_BASE_URL}/recipes/${id}/information`);
 
     return await response.json();
   } catch (error) {
