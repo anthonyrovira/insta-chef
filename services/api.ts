@@ -1,5 +1,5 @@
 import { SUPABASE_CONFIG } from "@/config/supabase";
-import { Recipe } from "@/types";
+import { Recipe, RecipeInformation } from "@/types";
 
 const API_BASE_URL = "https://api.spoonacular.com" as const;
 
@@ -45,6 +45,28 @@ export async function findRecipesByIngredients({
     return await response.json();
   } catch (error) {
     console.error("Error fetching recipes:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get recipe information
+ * @param id - The id of the recipe
+ * @returns The recipe information
+ */
+export async function getRecipeInformation(id: number): Promise<RecipeInformation> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/recipes/${id}/information?apiKey=${process.env.NEXT_PUBLIC_SPOONACULAR_API_KEY}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching recipe information:", error);
     throw error;
   }
 }

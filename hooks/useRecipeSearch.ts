@@ -1,8 +1,7 @@
 import { useState, useCallback } from "react";
-import { Recipe } from "@/types";
-import { findRecipesByIngredients } from "@/services/api";
+import { Recipe, RecipeInformation } from "@/types";
+import { findRecipesByIngredients as getRecipesByIngredients } from "@/services/api";
 import { useUrlParams } from "@/hooks/useUrlParams";
-import { mockRecipes } from "@/mocks/recipes";
 
 interface UseRecipeSearchProps {
   handleSetRecipes: (recipes: Recipe[]) => void;
@@ -31,7 +30,7 @@ export const useRecipeSearch = ({ handleSetRecipes, setIsSearching }: UseRecipeS
       updateParams({ ingredients });
 
       try {
-        const recipes = await findRecipesByIngredients({
+        const recipes = await getRecipesByIngredients({
           ingredients,
           number: 100,
           ranking: 1,
@@ -48,5 +47,14 @@ export const useRecipeSearch = ({ handleSetRecipes, setIsSearching }: UseRecipeS
     [handleSetRecipes]
   );
 
-  return { searchRecipes, error };
+  const getRecipeInformation = useCallback(async (id: number): Promise<RecipeInformation> => {
+    try {
+      return await getRecipeInformation(id);
+    } catch (error) {
+      console.error("Error fetching recipe information:", error);
+      throw error;
+    }
+  }, []);
+
+  return { searchRecipes, getRecipeInformation, error };
 };

@@ -88,10 +88,10 @@ export interface RecipeInformation {
   image: string;
   imageType: string;
   summary: string;
-  cuisines: unknown[];
-  dishTypes: unknown[];
+  cuisines: string[];
+  dishTypes: string[];
   diets: string[];
-  occasions: unknown[];
+  occasions: string[];
   instructions: string;
   analyzedInstructions: AnalyzedInstruction[];
   originalId: unknown;

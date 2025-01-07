@@ -9,7 +9,7 @@ import { useUrlParams } from "@/hooks/useUrlParams";
 import { useRecipeSearch } from "@/hooks/useRecipeSearch";
 import { Search } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 export interface SearchBarProps {
   handleSetRecipes: (newRecipes: Recipe[]) => void;
@@ -53,7 +53,10 @@ export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBa
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleAddTag({ id: uuidv4(), name: inputValue });
+      handleAddTag({
+        id: uuidv4(),
+        name: inputValue.charAt(0).toUpperCase() + inputValue.slice(1),
+      });
     }
   };
 

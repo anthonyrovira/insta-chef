@@ -5,20 +5,25 @@ import { mockRecipe } from "@/mocks/recipe";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { RecipeInformation } from "@/types";
-import { Loader, ArrowLeft } from "lucide-react";
+import { Loader, ArrowLeft, Leaf, Salad, Heart, BookmarkPlus, WheatOff, Milk, Bookmark } from "lucide-react";
+import { getRecipeInformation } from "@/services/api";
+import { useFavorites } from "@/hooks/useFavorites";
+import { toast, Toaster } from "sonner";
+import { useUser } from "@/hooks/useUser";
 
 export default function RecipePage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useUser();
   const [recipe, setRecipe] = useState<RecipeInformation>(mockRecipe);
   const [loading, setLoading] = useState<boolean>(true);
+  const { isFavorite, addFavorite, removeFavorite, error, clearError } = useFavorites();
 
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        setRecipe(mockRecipe);
+        const recipe = await getRecipeInformation(Number(params.id));
+        setRecipe(recipe);
       } catch (error) {
         console.error("Error fetching recipe:", error);
       } finally {
@@ -28,6 +33,27 @@ export default function RecipePage() {
 
     fetchRecipe();
   }, [params.id]);
+
+  const getHealthScoreColor = (score: number) => {
+    if (score <= 33) return "text-red-500";
+    if (score <= 66) return "text-yellow-500";
+    return "text-green-500";
+  };
+
+  const handleFavoriteClick = async () => {
+    const recipeId = Number(params.id);
+    try {
+      if (isFavorite(recipeId)) {
+        await removeFavorite(recipeId);
+        toast.success("Recipe removed from favorites");
+      } else {
+        await addFavorite(recipeId);
+        toast.success("Recipe added to favorites");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    }
+  };
 
   if (loading) {
     return (
@@ -39,6 +65,7 @@ export default function RecipePage() {
 
   return (
     <main className="min-h-screen p-8 bg-background-light dark:bg-background-dark">
+      <Toaster position="bottom-center" richColors />
       <div className="max-w-4xl mx-auto">
         <button
           onClick={() => router.back()}
@@ -54,14 +81,97 @@ export default function RecipePage() {
           {recipe.image && <Image src={recipe.image} alt={recipe.title} fill className="object-cover" />}
         </div>
 
-        <h1 className="text-3xl font-bold text-secondary-light dark:text-secondary-dark mb-6">{recipe.title}</h1>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold text-secondary-light dark:text-secondary-dark">{recipe.title}</h1>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-primary-light dark:text-primary-dark">
+                <Heart className="size-5" />
+                <span>{recipe.aggregateLikes}</span>
+              </div>
+              {user && (
+                <button
+                  onClick={handleFavoriteClick}
+                  className="flex items-center gap-2 text-primary-light dark:text-primary-dark hover:opacity-80 transition-opacity"
+                  aria-label={isFavorite(Number(params.id)) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                >
+                  {isFavorite(Number(params.id)) ? (
+                    <Bookmark className="size-5 fill-primary-light dark:fill-primary-dark" />
+                  ) : (
+                    <BookmarkPlus className="size-5" />
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="p-4 bg-primary-light/10 rounded-lg dark:bg-white/10">
+              <p className="text-sm text-primary-dark/70">Preparation time</p>
+              <p className="text-lg font-semibold text-secondary-light dark:text-secondary-dark">{recipe.readyInMinutes} min</p>
+            </div>
+            <div className="p-4 bg-primary-light/10 rounded-lg dark:bg-white/10">
+              <p className="text-sm text-primary-dark/70">Portions</p>
+              <p className="text-lg font-semibold text-secondary-light dark:text-secondary-dark">{recipe.servings} servings</p>
+            </div>
+            <div className="p-4 bg-primary-light/10 rounded-lg dark:bg-white/10">
+              <p className="text-sm text-primary-dark/70">Health score</p>
+              <p className={`text-lg font-semibold ${getHealthScoreColor(recipe.healthScore)}`}>{recipe.healthScore}/100</p>
+            </div>
+            <div className="p-4 bg-primary-light/10 rounded-lg dark:bg-white/10">
+              <p className="text-sm text-primary-dark/70">Price per serving</p>
+              <p className="text-lg font-semibold text-secondary-light dark:text-secondary-dark">
+                ${(recipe.pricePerServing / 100).toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-6">
+            {recipe.vegetarian && (
+              <span className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-primary-light/10 text-primary-light dark:bg-primary-dark/10 dark:text-primary-dark">
+                <Salad className="size-4" />
+                Vegetarian
+              </span>
+            )}
+            {recipe.vegan && (
+              <span className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-primary-light/10 text-primary-light dark:bg-primary-dark/10 dark:text-primary-dark">
+                <Leaf className="size-4" />
+                Vegan
+              </span>
+            )}
+            {recipe.glutenFree && (
+              <span className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-primary-light/10 text-primary-light dark:bg-primary-dark/10 dark:text-primary-dark">
+                <WheatOff className="size-4" />
+                Gluten-free
+              </span>
+            )}
+            {recipe.dairyFree && (
+              <span className="flex items-center gap-1 px-3 py-1 text-sm rounded-full bg-primary-light/10 text-primary-light dark:bg-primary-dark/10 dark:text-primary-dark">
+                <Milk className="size-4" />
+                Dairy-free
+              </span>
+            )}
+
+            {recipe.cuisines?.map((cuisine) => (
+              <span
+                key={cuisine}
+                className="px-3 py-1 text-sm rounded-full bg-primary-light/10 text-primary-light dark:bg-primary-dark/10 dark:text-primary-dark"
+              >
+                {cuisine}
+              </span>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <h2 className="text-xl font-semibold text-primary-light dark:text-primary-dark mb-4">Ingredients</h2>
             <ul className="space-y-2">
-              {recipe.extendedIngredients.map((ingredient) => (
-                <li key={ingredient.id} className="flex items-center gap-2 text-secondary-light dark:text-secondary-dark">
+              {recipe.extendedIngredients.map((ingredient, index) => (
+                <li
+                  key={`${ingredient.name}-${index}`}
+                  className="flex items-center gap-2 text-secondary-light dark:text-secondary-dark"
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-primary-light dark:bg-primary-dark" />
                   {ingredient.original}
                 </li>

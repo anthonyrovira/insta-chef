@@ -6,6 +6,13 @@ import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useFavorites } from "@/hooks/useFavorites";
 import ErrorDisplay from "@/components/ErrorDisplay";
+import { toast, Toaster } from "sonner";
+
+const IngredientPill = ({ name }: { name: string }) => (
+  <span className="text-xs table-cell max-w-[150px] truncate" title={name}>
+    {name}
+  </span>
+);
 
 export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Recipe[]; viewMode?: "grid" | "list" }) {
   const { push } = useRouter();
@@ -22,17 +29,23 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
   };
 
   const handleBookmark = async (recipeId: number) => {
-    if (isFavorite(recipeId)) {
-      await removeFavorite(recipeId);
-    } else {
-      await addFavorite(recipeId);
+    try {
+      if (isFavorite(recipeId)) {
+        await removeFavorite(recipeId);
+        toast.success("Recipe removed from favorites");
+      } else {
+        await addFavorite(recipeId);
+        toast.success("Recipe added to favorites");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
     }
   };
 
   return (
     <>
       {error && <ErrorDisplay title="Favorite Action Failed" message={error} onRetry={clearError} />}
-
+      <Toaster position="bottom-center" richColors />
       <div
         className={`grid gap-6 pb-8 place-items-center ${
           viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
@@ -65,20 +78,18 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
                 )}
 
                 {user && (
-                  <>
-                    <button
-                      role="button"
-                      name="toggle-favorite"
-                      onClick={() => handleBookmark(recipe.id)}
-                      className="absolute top-2 right-2 bg-tertiary-light shadow-lg rounded-full p-2 drop-shadow-sm hover:bg-background-light hover:shadow-xl"
-                    >
-                      {isFavorite(recipe.id) ? (
-                        <Bookmark className="w-6 h-6 text-primary-light dark:text-primary-dark fill-current" />
-                      ) : (
-                        <BookmarkPlus className="w-6 h-6 text-primary-light dark:text-primary-dark" />
-                      )}
-                    </button>
-                  </>
+                  <button
+                    role="button"
+                    name="toggle-favorite"
+                    onClick={() => handleBookmark(recipe.id)}
+                    className="absolute top-2 right-2 bg-tertiary-light shadow-lg rounded-full p-2 drop-shadow-sm hover:bg-background-light hover:shadow-xl"
+                  >
+                    {isFavorite(recipe.id) ? (
+                      <Bookmark className="w-6 h-6 text-primary-light dark:text-primary-dark fill-current" />
+                    ) : (
+                      <BookmarkPlus className="w-6 h-6 text-primary-light dark:text-primary-dark" />
+                    )}
+                  </button>
                 )}
 
                 <div className="p-4 flex-grow">
@@ -101,14 +112,14 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
 
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-secondary-light dark:text-secondary-dark mb-2">
-                      <span className=" text-primary-light dark:text-primary-dark ">{recipe.usedIngredientCount}</span> Matching
+                      <span className="text-primary-light dark:text-primary-dark">{recipe.usedIngredientCount}</span> Matching
                       ingredients:
                     </h4>
-                    <ul className="flex flex-wrap gap-2 text-sm text-secondary-light/70 dark:text-secondary-dark/70">
+                    <ul className="flex flex-wrap gap-2 text-sm">
                       {recipe.usedIngredients.slice(0, 3).map((ingredient) => (
-                        <li key={ingredient.id}>
-                          <span className="px-2 py-1 text-xs rounded-full bg-tags-green text-secondary-light dark:text-secondary-dark">
-                            {ingredient.name}
+                        <li key={ingredient.id} className="flex-shrink-0">
+                          <span className="px-2 py-1 bg-tags-green text-secondary-light dark:text-secondary-dark rounded-full">
+                            <IngredientPill name={ingredient.name} />
                           </span>
                         </li>
                       ))}
@@ -117,25 +128,17 @@ export default function RecipeCard({ recipes, viewMode = "grid" }: { recipes: Re
 
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-secondary-light dark:text-secondary-dark mb-2">
-                      <span className="text-primary-light dark:text-primary-dark ">{recipe.missedIngredientCount}</span> Missing
+                      <span className="text-primary-light dark:text-primary-dark">{recipe.missedIngredientCount}</span> Missing
                       ingredients:
                     </h4>
-                    <ul className="mb-12 flex flex-wrap gap-2 text-sm text-secondary-light/70 dark:text-secondary-dark/70">
-                      {showMore[index]
-                        ? recipe.missedIngredients.map((ingredient) => (
-                            <li key={ingredient.id}>
-                              <span className="px-2 py-1 text-xs truncate hover:text-clip rounded-full bg-tags-red text-secondary-light dark:text-secondary-dark">
-                                {ingredient.name}
-                              </span>
-                            </li>
-                          ))
-                        : recipe.missedIngredients.slice(0, 5).map((ingredient) => (
-                            <li key={ingredient.id}>
-                              <span className="px-2 py-1 text-xs truncate hover:text-clip rounded-full bg-tags-red text-secondary-light dark:text-secondary-dark">
-                                {ingredient.name}
-                              </span>
-                            </li>
-                          ))}
+                    <ul className="flex flex-wrap gap-2 text-sm mb-12">
+                      {(showMore[index] ? recipe.missedIngredients : recipe.missedIngredients.slice(0, 5)).map((ingredient) => (
+                        <li key={ingredient.id} className="flex-shrink-0">
+                          <span className="px-2 py-1 bg-tags-red text-secondary-light dark:text-secondary-dark rounded-full">
+                            <IngredientPill name={ingredient.name} />
+                          </span>
+                        </li>
+                      ))}
                       {recipe.missedIngredientCount > 5 && !showMore[index] && (
                         <button
                           onClick={() => handleShowMore(index)}
