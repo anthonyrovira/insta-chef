@@ -1,4 +1,3 @@
-import { SUPABASE_CONFIG } from "@/config/supabase";
 import { Recipe, RecipeInformation } from "@/types";
 
 const API_BASE_URL = "https://api.spoonacular.com" as const;

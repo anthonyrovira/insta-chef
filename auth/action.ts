@@ -20,6 +20,12 @@ const getURL = () => {
 
 export async function signInWithGoogle(redirectTo?: string) {
   const supabase = await createClient();
+  const baseUrl = getURL();
+  const callbackUrl = `${baseUrl}${redirectTo || ""}`;
+
+  console.log("Base URL:", baseUrl);
+  console.log("Callback URL:", callbackUrl);
+  console.log("Redirect To:", redirectTo);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: AUTH_PROVIDERS.GOOGLE,
@@ -28,7 +34,7 @@ export async function signInWithGoogle(redirectTo?: string) {
         access_type: "offline",
         prompt: "consent",
       },
-      redirectTo: `${getURL()}${redirectTo || ""}`,
+      redirectTo: callbackUrl,
     },
   });
 
