@@ -11,11 +11,6 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSetRecipes = (newRecipes: Recipe[]) => {
-    setError(null);
-    setRecipes(newRecipes);
-  };
-
   return (
     <Suspense
       fallback={
@@ -31,7 +26,7 @@ export default function Home() {
           </p>
 
           <div className="p-0 md:p-8 rounded-2xl">
-            <SearchBar handleSetRecipes={handleSetRecipes} setIsSearching={setIsSearching} />
+            <SearchBar setIsSearching={setIsSearching} setError={setError} setRecipes={setRecipes} />
           </div>
 
           {error && <div className="text-red-500 text-center mt-4">{error}</div>}

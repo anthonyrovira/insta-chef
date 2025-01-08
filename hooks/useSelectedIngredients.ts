@@ -5,9 +5,14 @@ import { v4 as uuidv4 } from "uuid";
 interface UseSelectedIngredientsProps {
   ingredientsFromUrl: string[];
   onInitialLoad?: (ingredients: string[]) => void;
+  onEmptyIngredients?: () => void;
 }
 
-export const useSelectedIngredients = ({ ingredientsFromUrl, onInitialLoad }: UseSelectedIngredientsProps) => {
+export const useSelectedIngredients = ({
+  ingredientsFromUrl,
+  onInitialLoad,
+  onEmptyIngredients,
+}: UseSelectedIngredientsProps) => {
   const [selectedTags, setSelectedTags] = useState<Ingredient[]>([]);
   const isFirstRender = useRef<boolean>(true);
 
@@ -25,9 +30,18 @@ export const useSelectedIngredients = ({ ingredientsFromUrl, onInitialLoad }: Us
    * @param tagId - The ID of the ingredient to remove
    * @returns void
    */
-  const removeIngredient = useCallback((tagId: string) => {
-    setSelectedTags((prev) => prev.filter((tag) => tag.id !== tagId));
-  }, []);
+  const removeIngredient = useCallback(
+    (tagId: string) => {
+      setSelectedTags((prev) => {
+        const newTags = prev.filter((tag) => tag.id !== tagId);
+        if (newTags.length === 0 && onEmptyIngredients) {
+          onEmptyIngredients();
+        }
+        return newTags;
+      });
+    },
+    [onEmptyIngredients]
+  );
 
   useEffect(() => {
     // Only run when the component is mounted and there are ingredients in the URL

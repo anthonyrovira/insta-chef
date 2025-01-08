@@ -13,19 +13,29 @@ import { useCallback, useState } from "react";
 import { track } from "@vercel/analytics";
 
 export interface SearchBarProps {
-  handleSetRecipes: (newRecipes: Recipe[]) => void;
   setIsSearching: (isSearching: boolean) => void;
+  setError: (error: string | null) => void;
+  setRecipes: (recipes: Recipe[]) => void;
 }
 
-export default function SearchBar({ setIsSearching, handleSetRecipes }: SearchBarProps) {
+export default function SearchBar({ setIsSearching, setError, setRecipes }: SearchBarProps) {
   const { params } = useUrlParams();
-  const { searchRecipes, error } = useRecipeSearch({ handleSetRecipes, setIsSearching });
+
+  const handleSetRecipes = (newRecipes: Recipe[]) => {
+    setRecipes(newRecipes);
+    setError(null);
+  };
+
+  const { searchRecipes, error } = useRecipeSearch({ setIsSearching, handleSetRecipes });
 
   const { selectedTags, addIngredient, removeIngredient } = useSelectedIngredients({
     ingredientsFromUrl: params.ingredients,
     onInitialLoad: (ingredients) => {
-      // Automatically search recipes when the component is mounted with ingredients in the URL
       searchRecipes(ingredients);
+    },
+    onEmptyIngredients: () => {
+      setRecipes([]);
+      setError(null);
     },
   });
 
