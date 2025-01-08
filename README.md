@@ -2,7 +2,7 @@
 
 **Instachef** is a modern web application designed to help users discover recipes based on the ingredients they already have. With a user-friendly interface and efficient search capabilities, Instachef makes cooking easier and more enjoyable.
 
-# ✨Live demo: [https://instachef.vercel.app/](https://instachef.vercel.app/)
+✨Live demo: [https://instachef.vercel.app/](https://instachef.vercel.app/)
 
 ## Features
 
@@ -21,7 +21,9 @@
 - **Icons**: Lucide React
 - **State Management**: React Hooks
 - **TypeScript**: Strict typing for a robust codebase
-- 
+- **Analytics**: Vercel Analytics
+- **Speed Insights**: Vercel Speed Insights
+
 ## URL Parameters
 
 Instachef utilizes URL-based state management for a better user experience, example url:
@@ -85,7 +87,7 @@ The URL parameters control:
 - `pnpm dev`: Run the development server.
 - `pnpm build`: Build the application for production.
 - `pnpm start`: Start the production server.
-
+- `pnpm test`: Run the tests.
 
 ## Contributing
 
