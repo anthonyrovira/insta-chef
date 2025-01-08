@@ -31,7 +31,7 @@ export default function AuthButton({ withText }: { withText: boolean }) {
           aria-label="Logout"
           onClick={handleClickLogOut}
           className={`flex items-center justify-center rounded-lg bg-tertiary-light dark:bg-tertiary-dark transition-colors ${
-            withText ? "w-full px-5 p-2" : "w-10 h-10"
+            withText ? "w-full px-5 h-10" : "w-10 h-10"
           }`}
         >
           <div className="relative group flex items-center justify-center gap-1">
@@ -61,7 +61,7 @@ export default function AuthButton({ withText }: { withText: boolean }) {
           aria-label="Login"
           onClick={signInWithGoogle}
           className={`flex items-center justify-center rounded-lg bg-tertiary-light dark:bg-tertiary-dark transition-colors ${
-            withText ? "w-full px-5 p-2" : "w-10 h-10"
+            withText ? "w-full px-5 h-10" : "w-10 h-10"
           }`}
         >
           <div className="relative group flex items-center justify-center gap-1">
