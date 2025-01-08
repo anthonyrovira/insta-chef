@@ -34,14 +34,14 @@ export default function AuthButton({ withText }: { withText: boolean }) {
             withText ? "w-full px-5 h-10" : "w-10 h-10"
           }`}
         >
-          <div className="relative group flex items-center justify-center gap-1">
+          <div className="relative group flex items-center justify-center">
             <Image
               loading="lazy"
               src={userSession.user_metadata.avatar_url}
               alt="User avatar"
-              width={40}
-              height={40}
-              className="rounded-full p-2"
+              width={withText ? 30 : 40}
+              height={withText ? 30 : 40}
+              className={`rounded-full p-2 ${withText ? "mr-1" : ""}`}
             />
             <span className="block lg:hidden">Logout</span>
             <span
@@ -64,8 +64,8 @@ export default function AuthButton({ withText }: { withText: boolean }) {
             withText ? "w-full px-5 h-10" : "w-10 h-10"
           }`}
         >
-          <div className="relative group flex items-center justify-center gap-1">
-            <img src="/google.svg" alt="Google logo" className="w-5 h-5" />
+          <div className="relative group flex items-center justify-center">
+            <img src="/google.svg" alt="Google logo" className={`w-5 h-5 ${withText ? "mr-1 p-0.5" : ""}`} />
             <span className="block lg:hidden">Login</span>
             <span
               className="absolute top-10 -left-4 rounded-lg text-sm bg-primary-dark text-white px-2 py-1 
