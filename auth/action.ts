@@ -23,10 +23,6 @@ export async function signInWithGoogle(redirectTo?: string) {
   const baseUrl = getURL();
   const callbackUrl = `${baseUrl}${redirectTo || ""}`;
 
-  console.log("Base URL:", baseUrl);
-  console.log("Callback URL:", callbackUrl);
-  console.log("Redirect To:", redirectTo);
-
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: AUTH_PROVIDERS.GOOGLE,
     options: {

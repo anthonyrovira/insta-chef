@@ -1,6 +1,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { Filter, Sort, View } from "@/types";
+import { useLastSearch } from "./useLastSearch";
 
 interface SearchUrlParams {
   ingredients: string[];
@@ -12,6 +13,7 @@ interface SearchUrlParams {
 export const useUrlParams = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { saveLastSearch } = useLastSearch();
 
   /**
    * Get current params
@@ -71,10 +73,15 @@ export const useUrlParams = () => {
         }
       }
 
+      const newUrl = `/?${params.toString()}`;
+
+      // Save last search to local storage
+      saveLastSearch(newUrl);
+
       // Update URL
-      router.push(`/?${params.toString()}`);
+      router.push(newUrl);
     },
-    [router, searchParams]
+    [router, searchParams, saveLastSearch]
   );
 
   return {

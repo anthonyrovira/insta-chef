@@ -12,6 +12,7 @@ import { toast, Toaster } from "sonner";
 import { useUser } from "@/hooks/useUser";
 import { getHealthScoreColor } from "@/utils/core";
 import { track } from "@vercel/analytics";
+import { useLastSearch } from "@/hooks/useLastSearch";
 
 export default function RecipePage() {
   const params = useParams();
@@ -20,6 +21,7 @@ export default function RecipePage() {
   const [recipe, setRecipe] = useState<RecipeInformation>(mockRecipe);
   const [loading, setLoading] = useState<boolean>(true);
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const { getLastSearch } = useLastSearch();
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -62,6 +64,11 @@ export default function RecipePage() {
     }
   };
 
+  const handleBack = () => {
+    const lastSearch = getLastSearch();
+    router.push(lastSearch);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
@@ -75,10 +82,10 @@ export default function RecipePage() {
       <Toaster position="bottom-center" richColors />
       <div className="max-w-4xl mx-auto">
         <button
-          onClick={() => router.back()}
+          onClick={handleBack}
           type="button"
           name="back"
-          aria-label="Back to home"
+          aria-label="Back to search"
           className="mb-6 text-lg flex items-center gap-2 text-primary-light dark:text-primary-dark hover:opacity-80 transition-opacity"
         >
           <ArrowLeft className="size-4" />
