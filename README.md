@@ -2,6 +2,8 @@
 
 **Instachef** is a modern web application designed to help users discover recipes based on the ingredients they already have. With a user-friendly interface and efficient search capabilities, Instachef makes cooking easier and more enjoyable.
 
+# ✨Live demo: [https://instachef.vercel.app/](https://instachef.vercel.app/)
+
 ## Features
 
 - **Ingredient-based Recipe Search**: Select ingredients you have, and Instachef will suggest recipes tailored to your selection.
