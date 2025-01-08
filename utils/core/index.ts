@@ -1,5 +1,4 @@
 import { Filter, Ingredient, Recipe, Sort } from "@/types";
-import { useCallback } from "react";
 
 /**
  * Get the health score color based on the score
